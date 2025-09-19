@@ -45,7 +45,7 @@ function auto_safelink() {
 // ==============================
 // Overlay Back to Top + Feed Loader
 // ==============================
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
   function loadFeed(feedUrl, limit, targetSelector, randomize) {
     var container = document.querySelector(targetSelector);
     if (!container) return;
@@ -54,24 +54,67 @@ document.addEventListener("DOMContentLoaded", function() {
       .then(res => res.json())
       .then(data => {
         var entries = data.feed.entry;
-        if (!entries) return;
-        if (randomize) entries.sort(() => 0.5 - Math.random());
-
-        var html = '<ul>';
-        for (var i = 0; i < Math.min(limit, entries.length); i++) {
-          var entry = entries[i];
-          var title = entry.title.$t;
-          var link = entry.link.find(l => l.rel === 'alternate').href;
-          html += '<li><a href="' + link + '">' + title + '</a></li>';
+        if (!entries) {
+          container.innerHTML = "<p>Tidak ada posting.</p>";
+          return;
         }
-        html += '</ul>';
+
+        if (randomize) {
+          entries.sort(() => 0.5 - Math.random());
+        }
+
+        var html = "<ul class='post'>";
+        entries.slice(0, limit).forEach(entry => {
+          var link = entry.link.find(l => l.rel === "alternate").href;
+          var postTitle = entry.title.$t;
+
+          // Format tanggal
+          var rawDate = new Date(entry.published.$t);
+          var options = { year: "numeric", month: "long", day: "numeric" };
+          var date = rawDate.toLocaleDateString("id-ID", options);
+
+          // Ambil thumbnail
+          var thumb = "";
+          if (entry.media$thumbnail) {
+            thumb = entry.media$thumbnail.url.replace("s72-c", "s120-c");
+          } else if (entry.content && entry.content.$t.match(/<img/)) {
+            var m = entry.content.$t.match(/<img[^>]+src="([^">]+)"/);
+            if (m) thumb = m[1];
+          } else {
+            // Gambar default kalau artikel tidak ada thumbnail
+            thumb = "https://i.ibb.co/your-default.jpg";
+          }
+
+          html += `
+            <li class="post-content">
+              <a class="post-image-link" href="${link}">
+                <img class="post-thumb" src="${thumb}" alt="${postTitle}">
+              </a>
+              <div class="post-info">
+                <h2 class="post-title"><a href="${link}">${postTitle}</a></h2>
+                <div class="post-meta">
+                  <span class="post-date">${date}</span>
+                </div>
+              </div>
+            </li>`;
+        });
+        html += "</ul>";
         container.innerHTML = html;
       })
-      .catch(err => console.error('Feed load error:', err));
+      .catch(err => {
+        console.error("Feed error:", err);
+        container.innerHTML = "<p>Error load feed.</p>";
+      });
   }
 
-  // Contoh pemanggilan:
-  loadFeed('https://marwansya.me/feeds/posts/default?alt=json', 5, '#recent-posts', true);
+  // Gunakan URL blog langsung, bukan window.location.origin
+  var base = "https://marwansya.blogspot.com"; // ganti dengan URL blog kamu
+
+  // Post Acak
+  loadFeed(base + "/feeds/posts/summary?alt=json&max-results=50", 3, "#footer-sec1 .widget-content", true);
+
+  // Post Terbaru
+  loadFeed(base + "/feeds/posts/summary?alt=json&max-results=3&orderby=published", 3, "#footer-sec2 .widget-content", false);
 });
 
 // ==============================
