@@ -108,7 +108,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Gunakan URL blog langsung, bukan window.location.origin
-  var base = "https://marwansya.me"; // ganti dengan URL blog kamu
+  var base = "https://marwansya.blogspot.com"; // ganti dengan URL blog kamu
 
   // Post Acak
   loadFeed(base + "/feeds/posts/summary?alt=json&max-results=50", 3, "#footer-sec1 .widget-content", true);
