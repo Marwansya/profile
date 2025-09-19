@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   // Contoh pemanggilan:
-  // loadFeed('https://namablog.blogspot.com/feeds/posts/default?alt=json', 5, '#recent-posts', true);
+  loadFeed('https://marwansya.me/feeds/posts/default?alt=json', 5, '#recent-posts', true);
 });
 
 // ==============================
